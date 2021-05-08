@@ -15,7 +15,7 @@ commands:
     description: Use Rust nightly as required by Rocket framework
     steps:
       - run:
-          name: set rust version to default to nightly
+          name: set rust version default to nightly
           command: rustup default nightly
 
 # rust circleci setup gleaned from https://gist.github.com/LukeMathWalker/6153b07c4528ca1db416f24b09038fca
@@ -34,7 +34,9 @@ jobs:
           command: rustc --version; cargo --version; rustup --version
       - run:
           name: Calculate dependencies
-          command: cargo generate-lockfile
+          command: |
+            cd hello_world
+            cargo generate-lockfile
       - restore_cache:
           keys:
             - v1-cargo-cache-{{ arch }}-{{ checksum "Cargo.lock" }}
@@ -44,13 +46,15 @@ jobs:
       - save_cache:
           paths:
             - /usr/local/cargo/registry
-            - target/debug/.fingerprint
-            - target/debug/build
-            - target/debug/deps
+            - hello_world/target/debug/.fingerprint
+            - hello_world/target/debug/build
+            - hello_world/target/debug/deps
           key: v1-cargo-cache-{{ arch }}-{{ checksum "Cargo.lock" }}
       - run:
           name: Run all tests
-          command: cargo test
+          command: |
+            cd hello_world
+            cargo test
 
   security:
     docker:
@@ -77,7 +81,9 @@ jobs:
           key: v1-cargo-audit-{{ arch }}
       - run:
           name: Check for known security issues in dependencies
-          command: cargo audit
+          command: |
+            cd hello_world
+            cargo audit
 
   format:
     docker:
@@ -93,7 +99,9 @@ jobs:
           command: rustup component add rustfmt
       - run:
           name: Formatting
-          command: cargo fmt --all -- --check
+          command: |
+            cd hello_world
+            cargo fmt --all -- --check
 
   lint:
     docker:
@@ -109,7 +117,9 @@ jobs:
           command: rustup component add clippy
       - run:
           name: Linting
-          command: cargo clippy -- -D warnings
+          command: |
+            cd hello_world
+            cargo clippy -- -D warnings
 
 workflows:
   version: 2
@@ -119,9 +129,17 @@ workflows:
       - security
       - format
       - lint
-      # - build-image
-      # - deploy-infra
-      # - deploy-image
-      # - smoke-test
-      # - cloudfront-update
+      # - build-image:
+      #     requires: [build-and-test, security, format, lint]
+      # - deploy-infra:
+      #     requires: [build-image]
+      # - deploy-image:
+      #     requires: [deploy-infra]
+      # - smoke-test:
+      #     requires: [deploy-image]
+      # - cloudfront-update:
+      #     requires: [smoke-test] 
+      #     filters:
+      #       branches:
+      #         only: [master]
 
