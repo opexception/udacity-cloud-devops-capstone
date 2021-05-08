@@ -1,0 +1,13 @@
+/Users/rob/devel/udacity-cloud-devops-capstone/hello_world/target/debug/deps/digest-d5093d8197eec72f.rmeta: /Users/rob/.cargo/registry/src/github.com-1ecc6299db9ec823/digest-0.9.0/src/lib.rs /Users/rob/.cargo/registry/src/github.com-1ecc6299db9ec823/digest-0.9.0/src/digest.rs /Users/rob/.cargo/registry/src/github.com-1ecc6299db9ec823/digest-0.9.0/src/dyn_digest.rs /Users/rob/.cargo/registry/src/github.com-1ecc6299db9ec823/digest-0.9.0/src/errors.rs /Users/rob/.cargo/registry/src/github.com-1ecc6299db9ec823/digest-0.9.0/src/fixed.rs /Users/rob/.cargo/registry/src/github.com-1ecc6299db9ec823/digest-0.9.0/src/variable.rs /Users/rob/.cargo/registry/src/github.com-1ecc6299db9ec823/digest-0.9.0/src/xof.rs
+
+/Users/rob/devel/udacity-cloud-devops-capstone/hello_world/target/debug/deps/libdigest-d5093d8197eec72f.rlib: /Users/rob/.cargo/registry/src/github.com-1ecc6299db9ec823/digest-0.9.0/src/lib.rs /Users/rob/.cargo/registry/src/github.com-1ecc6299db9ec823/digest-0.9.0/src/digest.rs /Users/rob/.cargo/registry/src/github.com-1ecc6299db9ec823/digest-0.9.0/src/dyn_digest.rs /Users/rob/.cargo/registry/src/github.com-1ecc6299db9ec823/digest-0.9.0/src/errors.rs /Users/rob/.cargo/registry/src/github.com-1ecc6299db9ec823/digest-0.9.0/src/fixed.rs /Users/rob/.cargo/registry/src/github.com-1ecc6299db9ec823/digest-0.9.0/src/variable.rs /Users/rob/.cargo/registry/src/github.com-1ecc6299db9ec823/digest-0.9.0/src/xof.rs
+
+/Users/rob/devel/udacity-cloud-devops-capstone/hello_world/target/debug/deps/digest-d5093d8197eec72f.d: /Users/rob/.cargo/registry/src/github.com-1ecc6299db9ec823/digest-0.9.0/src/lib.rs /Users/rob/.cargo/registry/src/github.com-1ecc6299db9ec823/digest-0.9.0/src/digest.rs /Users/rob/.cargo/registry/src/github.com-1ecc6299db9ec823/digest-0.9.0/src/dyn_digest.rs /Users/rob/.cargo/registry/src/github.com-1ecc6299db9ec823/digest-0.9.0/src/errors.rs /Users/rob/.cargo/registry/src/github.com-1ecc6299db9ec823/digest-0.9.0/src/fixed.rs /Users/rob/.cargo/registry/src/github.com-1ecc6299db9ec823/digest-0.9.0/src/variable.rs /Users/rob/.cargo/registry/src/github.com-1ecc6299db9ec823/digest-0.9.0/src/xof.rs
+
+/Users/rob/.cargo/registry/src/github.com-1ecc6299db9ec823/digest-0.9.0/src/lib.rs:
+/Users/rob/.cargo/registry/src/github.com-1ecc6299db9ec823/digest-0.9.0/src/digest.rs:
+/Users/rob/.cargo/registry/src/github.com-1ecc6299db9ec823/digest-0.9.0/src/dyn_digest.rs:
+/Users/rob/.cargo/registry/src/github.com-1ecc6299db9ec823/digest-0.9.0/src/errors.rs:
+/Users/rob/.cargo/registry/src/github.com-1ecc6299db9ec823/digest-0.9.0/src/fixed.rs:
+/Users/rob/.cargo/registry/src/github.com-1ecc6299db9ec823/digest-0.9.0/src/variable.rs:
+/Users/rob/.cargo/registry/src/github.com-1ecc6299db9ec823/digest-0.9.0/src/xof.rs:

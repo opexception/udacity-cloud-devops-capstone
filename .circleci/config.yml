@@ -1,0 +1,127 @@
+version: 2.1
+orbs:
+  aws-cli: circleci/aws-cli@1.4.0
+
+commands:
+  destroy-environment:
+    description: Destroy cloudformation stacks given a workflow ID.
+    steps:
+      - run:
+          name: Destroy environments
+          when: on_fail
+          command: |
+            aws cloudformation delete-stack --stack-name capstone-${CIRCLE_WORKFLOW_ID}
+  setup-rust-nightly:
+    description: Use Rust nightly as required by Rocket framework
+    steps:
+      - run:
+          name: set rust version to default to nightly
+          command: rustup default nightly
+
+# rust circleci setup gleaned from https://gist.github.com/LukeMathWalker/6153b07c4528ca1db416f24b09038fca
+jobs:
+  build-and-test:
+    docker:
+      - image: circleci/rust
+    environment:
+      # Fail the build if there are warnings
+      RUSTFLAGS: '-D warnings'
+    steps:
+      - checkout
+      - setup-rust-nightly
+      - run:
+          name: Version information
+          command: rustc --version; cargo --version; rustup --version
+      - run:
+          name: Calculate dependencies
+          command: cargo generate-lockfile
+      - restore_cache:
+          keys:
+            - v1-cargo-cache-{{ arch }}-{{ checksum "Cargo.lock" }}
+      - run:
+          name: Build all targets
+          command: cargo build
+      - save_cache:
+          paths:
+            - /usr/local/cargo/registry
+            - target/debug/.fingerprint
+            - target/debug/build
+            - target/debug/deps
+          key: v1-cargo-cache-{{ arch }}-{{ checksum "Cargo.lock" }}
+      - run:
+          name: Run all tests
+          command: cargo test
+
+  security:
+    docker:
+      - image: circleci/rust
+    steps:
+      - checkout
+      - setup-rust-nightly
+      - run:
+          name: Version information
+          command: rustc --version; cargo --version; rustup --version
+      - run:
+          name: Cache permission
+          command: |
+            sudo chown -R $(whoami):$(id -ng) /usr/local/cargo
+      - restore_cache:
+          keys:
+            - v1-cargo-audit-{{ arch }}
+      - run:
+          name: Install dependency auditing tool
+          command: cargo install cargo-audit
+      - save_cache:
+          paths:
+            - /usr/local/cargo
+          key: v1-cargo-audit-{{ arch }}
+      - run:
+          name: Check for known security issues in dependencies
+          command: cargo audit
+
+  format:
+    docker:
+      - image: circleci/rust
+    steps:
+      - checkout
+      - setup-rust-nightly
+      - run:
+          name: Version information
+          command: rustc --version; cargo --version; rustup --version
+      - run:
+          name: Install formatter
+          command: rustup component add rustfmt
+      - run:
+          name: Formatting
+          command: cargo fmt --all -- --check
+
+  lint:
+    docker:
+      - image: circleci/rust
+    steps:
+      - checkout
+      - setup-rust-nightly
+      - run:
+          name: Version information
+          command: rustc --version; cargo --version; rustup --version
+      - run:
+          name: Install Clippy
+          command: rustup component add clippy
+      - run:
+          name: Linting
+          command: cargo clippy -- -D warnings
+
+workflows:
+  version: 2
+  build-test:
+    jobs:
+      - build-and-test
+      - security
+      - format
+      - lint
+      # - build-image
+      # - deploy-infra
+      # - deploy-image
+      # - smoke-test
+      # - cloudfront-update
+

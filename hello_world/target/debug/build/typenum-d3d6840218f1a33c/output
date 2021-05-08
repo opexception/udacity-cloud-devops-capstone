@@ -1,0 +1,2 @@
+cargo:rustc-env=TYPENUM_BUILD_CONSTS=/Users/rob/devel/udacity-cloud-devops-capstone/hello_world/target/debug/build/typenum-d3d6840218f1a33c/out/consts.rs
+cargo:rustc-env=TYPENUM_BUILD_OP=/Users/rob/devel/udacity-cloud-devops-capstone/hello_world/target/debug/build/typenum-d3d6840218f1a33c/out/op.rs
