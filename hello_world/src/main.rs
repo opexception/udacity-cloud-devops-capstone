@@ -1,15 +1,7 @@
 #![feature(proc_macro_hygiene, decl_macro)]
 
-#[macro_use] extern crate rocket;
-
-// struct student {
-//     name: String
-// }
-
-// #[post("/student", data = "student_form")]
-// fn new_student(student_form: student) -> String {
-
-// }
+#[macro_use]
+extern crate rocket;
 
 #[get("/")]
 fn index() -> &'static str {
