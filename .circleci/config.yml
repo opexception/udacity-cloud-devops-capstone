@@ -138,8 +138,8 @@ jobs:
           name: build and push Docker image
           command: |
             docker build --tag=udacity-cloud-devops-capstone .
-            echo $DOCKER_PWD | docker login -u "opexception" --password-stdin
-            docker push opexception/udacity-projects:udacity-cloud-devops-capstone
+            echo $DOCKER_PWD | docker login -u $DOCKER_USER --password-stdin
+            docker push $DOCKER_USER/udacity-projects:udacity-cloud-devops-capstone-{{ checksum "hello_world/Cargo.lock" }}
 
 workflows:
   version: 2
@@ -149,8 +149,8 @@ workflows:
       - security
       - format
       - lint
-      # - build-image:
-      #     requires: [build-and-test, security, format, lint]
+      - build-image:
+          requires: [build-and-test, security, format, lint]
       # - deploy-infra:
       #     requires: [build-image]
       # - deploy-image:
