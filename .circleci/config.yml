@@ -132,7 +132,7 @@ jobs:
       - restore_cache:
           keys:
             - v1-cargo-cache-{{ arch }}-{{ checksum "hello_world/Cargo.lock" }}
-      - setup_remote_docker:
+      - setup_remote_docker
           #docker_layer_caching: true
       - run:
           name: build and push Docker image
