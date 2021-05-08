@@ -39,10 +39,12 @@ jobs:
             cargo generate-lockfile
       - restore_cache:
           keys:
-            - v1-cargo-cache-{{ arch }}-{{ checksum "Cargo.lock" }}
+            - v1-cargo-cache-{{ arch }}-{{ checksum "hello_world/Cargo.lock" }}
       - run:
           name: Build all targets
-          command: cargo build
+          command: |
+            cd hello_world
+            cargo build
       - save_cache:
           paths:
             - /usr/local/cargo/registry
