@@ -199,11 +199,14 @@ workflows:
   build-test:
     jobs:
       - build-and-test
-      - security
-      - format
-      - lint
+      - security:
+          requires: [build-and-test]
+      - format:
+          requires: [build-and-test]
+      - lint:
+          requires: [build-and-test]
       - build-final:
-          requires: [build-and-test, security, format, lint]
+          requires: [security, format, lint]
       - build-image:
           requires: [build-final]
       # - deploy-infra:
