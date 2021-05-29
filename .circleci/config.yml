@@ -150,10 +150,14 @@ jobs:
             cd hello_world
             rustup target add x86_64-unknown-linux-gnu
             cargo build --target=x86_64-unknown-linux-gnu --release
-      - save_cache:
+      # - save_cache:
+      #     paths:
+      #       - hello_world/target/x86_64-unknown-linux-gnu/release/hello_world
+      #     key: build-cache-{{ arch }}-<< pipeline.id >>
+      - persist_to_workspace:
+          root: .
           paths:
-            - hello_world/target/x86_64-unknown-linux-gnu/release/hello_world
-          key: build-cache-{{ arch }}-<< pipeline.id >>
+            - hello_world/target/*
 
 
   build-image:
@@ -161,9 +165,11 @@ jobs:
       - image: docker:git
     steps:
       - checkout
-      - restore_cache:
-          keys:
-            - build-cache-{{ arch }}-<< pipeline.id >>
+      # - restore_cache:
+      #     keys:
+      #       - build-cache-{{ arch }}-<< pipeline.id >>
+      - attach_workspace:
+          at: /tmp/build
       - setup_remote_docker
           # Layer caching requires paid CircleCI account
           #docker_layer_caching: true
