@@ -37,22 +37,22 @@ jobs:
           command: |
             cd hello_world
             cargo generate-lockfile
-      # - restore_cache:
-      #     keys:
-      #       - cache-{{ arch }}-<< pipeline.id >>
+      - restore_cache:
+          keys:
+            - cache-{{ arch }}-<< pipeline.id >>
       - run:
           name: Build all targets
           command: |
             cd hello_world
             cargo build
-      # - save_cache:
-      #     paths:
-      #       - /usr/local/cargo/registry
-      #       - hello_world/target/debug/.fingerprint
-      #       - hello_world/target/debug/build
-      #       - hello_world/target/debug/deps
-      #       - hello_world/target/debug/hello_world
-      #     key: cache-{{ arch }}-<< pipeline.id >>
+      - save_cache:
+          paths:
+            - /usr/local/cargo/registry
+            - hello_world/target/debug/.fingerprint
+            - hello_world/target/debug/build
+            - hello_world/target/debug/deps
+            - hello_world/target/debug/hello_world
+          key: cache-{{ arch }}-<< pipeline.id >>
       - run:
           name: Run all tests
           command: |
@@ -72,16 +72,16 @@ jobs:
           name: Cache permission
           command: |
             sudo chown -R $(whoami):$(id -ng) /usr/local/cargo
-      # - restore_cache:
-      #     keys:
-      #       - v1-cargo-audit-{{ arch }}-${CIRCLE_WORKFLOW_ID}
+      - restore_cache:
+          keys:
+            - cache-{{ arch }}-<< pipeline.id >>
       - run:
           name: Install dependency auditing tool
           command: cargo install cargo-audit
-      # - save_cache:
-      #     paths:
-      #       - /usr/local/cargo
-      #     key: v1-cargo-audit-{{ arch }}-${CIRCLE_WORKFLOW_ID}
+      - save_cache:
+          paths:
+            - /usr/local/cargo
+          key: cache-{{ arch }}-<< pipeline.id >>
       - run:
           name: Check for known security issues in dependencies
           command: |
