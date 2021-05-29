@@ -140,8 +140,10 @@ jobs:
           command: |
             pwd
             ls -al
+            echo
             ls -al hello_world/target/debug/hello_world
             chmod +x hello_world/target/debug/hello_world
+            file hello_world/target/debug/hello_world
             docker build --tag=$DOCKER_USER/udacity-cloud-devops-engineer-capstone .
             imageID=$(docker image ls | grep 'udacity-cloud-devops-engineer-capstone' | awk '{print $3}')
             docker image ls
