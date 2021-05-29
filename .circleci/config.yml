@@ -39,7 +39,7 @@ jobs:
             cargo generate-lockfile
       # - restore_cache:
       #     keys:
-      #       - v2-cargo-cache-{{ arch }}-<< pipeline.id >>
+      #       - cache-{{ arch }}-<< pipeline.id >>
       - run:
           name: Build all targets
           command: |
@@ -52,7 +52,7 @@ jobs:
       #       - hello_world/target/debug/build
       #       - hello_world/target/debug/deps
       #       - hello_world/target/debug/hello_world
-      #     key: v2-cargo-cache-{{ arch }}-<< pipeline.id >>
+      #     key: cache-{{ arch }}-<< pipeline.id >>
       - run:
           name: Run all tests
           command: |
@@ -143,7 +143,7 @@ jobs:
             cargo generate-lockfile
       # - restore_cache:
       #     keys:
-      #       - v3-cargo-cache-{{ arch }}-<< pipeline.id >>
+      #       - build-cache-{{ arch }}-<< pipeline.id >>
       - run:
           name: Build all targets
           command: |
@@ -152,23 +152,18 @@ jobs:
             cargo build --target=x86_64-unknown-linux-gnu --release
       - save_cache:
           paths:
-            - /usr/local/cargo/registry
-            - hello_world/target/x86_64-unknown-linux-gnu/release/.fingerprint
-            - hello_world/target/x86_64-unknown-linux-gnu/release/build
-            - hello_world/target/x86_64-unknown-linux-gnu/release/deps
             - hello_world/target/x86_64-unknown-linux-gnu/release/hello_world
-            - Dockerfile
-          key: v3-cargo-cache-{{ arch }}-<< pipeline.id >>
+          key: build-cache-{{ arch }}-<< pipeline.id >>
 
 
   build-image:
     docker:
       - image: docker:git
     steps:
-      #- checkout
+      - checkout
       - restore_cache:
           keys:
-            - v3-cargo-cache-{{ arch }}-<< pipeline.id >>
+            - build-cache-{{ arch }}-<< pipeline.id >>
       - setup_remote_docker
           # Layer caching requires paid CircleCI account
           #docker_layer_caching: true
