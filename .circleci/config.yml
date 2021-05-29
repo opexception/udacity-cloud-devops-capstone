@@ -74,14 +74,14 @@ jobs:
             sudo chown -R $(whoami):$(id -ng) /usr/local/cargo
       - restore_cache:
           keys:
-            - v1-cargo-audit-{{ arch }}
+            - v1-cargo-audit-{{ arch }}-${CIRCLE_WORKFLOW_ID}
       - run:
           name: Install dependency auditing tool
           command: cargo install cargo-audit
       - save_cache:
           paths:
             - /usr/local/cargo
-          key: v1-cargo-audit-{{ arch }}
+          key: v1-cargo-audit-{{ arch }}-${CIRCLE_WORKFLOW_ID}
       - run:
           name: Check for known security issues in dependencies
           command: |
