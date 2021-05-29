@@ -140,12 +140,12 @@ jobs:
           command: |
             pwd
             ls -al
-            docker build --tag=udacity-cloud-devops-engineer-capstone .
+            docker build --tag=$DOCKER_USER/udacity-cloud-devops-engineer-capstone .
             imageID=$(docker image ls | grep 'udacity-cloud-devops-engineer-capstone' | awk '{print $3}')
             docker image ls
             echo "I think the image ID I just built is $imageID"
             echo $DOCKER_PWD | docker login -u $DOCKER_USER --password-stdin
-            docker tag $imageID udacity-cloud-devops-engineer-capstone:${CIRCLE_WORKFLOW_ID}
+            docker tag $imageID $DOCKER_USER/udacity-cloud-devops-engineer-capstone:${CIRCLE_WORKFLOW_ID}
             docker push $DOCKER_USER/udacity-cloud-devops-engineer-capstone:${CIRCLE_WORKFLOW_ID}
 
 workflows:
