@@ -1,4 +1,5 @@
-FROM circleci/rust
+#FROM circleci/rust
+FROM apline:latest
 
 EXPOSE 8000
 
