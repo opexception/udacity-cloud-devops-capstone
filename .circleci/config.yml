@@ -126,7 +126,7 @@ jobs:
 
   build-image:
     docker:
-      - image: docker:17.05.0-ce-git
+      - image: docker:git
     steps:
       - checkout
       - restore_cache:
