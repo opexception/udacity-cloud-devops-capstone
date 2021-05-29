@@ -37,22 +37,22 @@ jobs:
           command: |
             cd hello_world
             cargo generate-lockfile
-      - restore_cache:
-          keys:
-            - v2-cargo-cache-{{ arch }}-${CIRCLE_WORKFLOW_ID}
+      # - restore_cache:
+      #     keys:
+      #       - v2-cargo-cache-{{ arch }}-${CIRCLE_WORKFLOW_ID}
       - run:
           name: Build all targets
           command: |
             cd hello_world
             cargo build
-      - save_cache:
-          paths:
-            - /usr/local/cargo/registry
-            - hello_world/target/debug/.fingerprint
-            - hello_world/target/debug/build
-            - hello_world/target/debug/deps
-            - hello_world/target/debug/hello_world
-          key: v2-cargo-cache-{{ arch }}-${CIRCLE_WORKFLOW_ID}
+      # - save_cache:
+      #     paths:
+      #       - /usr/local/cargo/registry
+      #       - hello_world/target/debug/.fingerprint
+      #       - hello_world/target/debug/build
+      #       - hello_world/target/debug/deps
+      #       - hello_world/target/debug/hello_world
+      #     key: v2-cargo-cache-{{ arch }}-${CIRCLE_WORKFLOW_ID}
       - run:
           name: Run all tests
           command: |
@@ -123,12 +123,48 @@ jobs:
           command: |
             cd hello_world
             cargo clippy -- -D warnings
+  
+  build-final:
+    docker:
+      - image: circleci/rust
+    environment:
+      # Fail the build if there are warnings
+      RUSTFLAGS: '-D warnings'
+    steps:
+      - checkout
+      - setup-rust-nightly
+      - run:
+          name: Version information
+          command: rustc --version; cargo --version; rustup --version
+      - run:
+          name: Calculate dependencies
+          command: |
+            cd hello_world
+            cargo generate-lockfile
+      # - restore_cache:
+      #     keys:
+      #       - v2-cargo-cache-{{ arch }}-${CIRCLE_WORKFLOW_ID}
+      - run:
+          name: Build all targets
+          command: |
+            cd hello_world
+            rustup target add x86_64-unknown-linux-gnu
+            cargo build --target=x86_64-unknown-linux-gnu --release
+      - save_cache:
+          paths:
+            - /usr/local/cargo/registry
+            - hello_world/target/x86_64-unknown-linux-gnu/release/.fingerprint
+            - hello_world/target/x86_64-unknown-linux-gnu/release/build
+            - hello_world/target/x86_64-unknown-linux-gnu/release/deps
+            - hello_world/target/x86_64-unknown-linux-gnu/release/hello_world
+          key: v2-cargo-cache-{{ arch }}-${CIRCLE_WORKFLOW_ID}
+
 
   build-image:
     docker:
       - image: docker:git
     steps:
-      - checkout
+      #- checkout
       - restore_cache:
           keys:
             - v2-cargo-cache-{{ arch }}-${CIRCLE_WORKFLOW_ID}
@@ -157,8 +193,10 @@ workflows:
       - security
       - format
       - lint
-      - build-image:
+      - build-final:
           requires: [build-and-test, security, format, lint]
+      - build-image:
+          requires: [build-final]
       # - deploy-infra:
       #     requires: [build-image]
       # - deploy-image:

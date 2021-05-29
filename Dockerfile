@@ -7,7 +7,7 @@ WORKDIR /app
 
 RUN apk add file
 
-COPY hello_world/target/debug/hello_world /app
+COPY hello_world/target/x86_64-unknown-linux-gnu/release/hello_world /app
 
 RUN file /app/hello_world
 
