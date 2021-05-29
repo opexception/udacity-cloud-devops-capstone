@@ -157,6 +157,7 @@ jobs:
             - hello_world/target/x86_64-unknown-linux-gnu/release/build
             - hello_world/target/x86_64-unknown-linux-gnu/release/deps
             - hello_world/target/x86_64-unknown-linux-gnu/release/hello_world
+            - Dockerfile
           key: v3-cargo-cache-{{ arch }}-${CIRCLE_WORKFLOW_ID}
 
 
