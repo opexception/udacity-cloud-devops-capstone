@@ -171,7 +171,7 @@ jobs:
       #     keys:
       #       - build-cache-{{ arch }}-<< pipeline.id >>
       - attach_workspace:
-          at: /tmp/build
+          at: ~/project
       - setup_remote_docker
           # Layer caching requires paid CircleCI account
           #docker_layer_caching: true
@@ -179,8 +179,8 @@ jobs:
           name: Sanity check
           command: |
             pwd
-            ls -al /tmp/build
-            ls -al /tmp/build/hello_world/target/x86_64-unknown-linux-gnu/release
+            ls -al ~/project
+            ls -al ~/project/hello_world/target/x86_64-unknown-linux-gnu/release
       - run:
           name: build and push Docker image
           command: |
@@ -205,7 +205,7 @@ workflows:
       - lint
       - build-final
       - build-image:
-          requires: [build-final]
+          requires: [build-final, build-and-test, security, format, lint]
       # - deploy-infra:
       #     requires: [build-image]
       # - deploy-image:
