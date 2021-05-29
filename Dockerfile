@@ -6,6 +6,6 @@ WORKDIR /app
 
 COPY hello_world/target/debug/hello_world /app
 
-#RUN chmod +x /app/hello_world
+RUN sudo chmod +x /app/hello_world
 
 CMD ["/app/hello_world"]
