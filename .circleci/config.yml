@@ -39,7 +39,7 @@ jobs:
             cargo generate-lockfile
       - restore_cache:
           keys:
-            - v1-cargo-cache-{{ arch }}-${CIRCLE_WORKFLOW_ID}
+            - v2-cargo-cache-{{ arch }}-${CIRCLE_WORKFLOW_ID}
       - run:
           name: Build all targets
           command: |
@@ -52,7 +52,7 @@ jobs:
             - hello_world/target/debug/build
             - hello_world/target/debug/deps
             - hello_world/target/debug/hello_world
-          key: v1-cargo-cache-{{ arch }}-${CIRCLE_WORKFLOW_ID}
+          key: v2-cargo-cache-{{ arch }}-${CIRCLE_WORKFLOW_ID}
       - run:
           name: Run all tests
           command: |
@@ -131,7 +131,7 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - v1-cargo-cache-{{ arch }}-${CIRCLE_WORKFLOW_ID}
+            - v2-cargo-cache-{{ arch }}-${CIRCLE_WORKFLOW_ID}
       - setup_remote_docker
           # Layer caching requires paid CircleCI account
           #docker_layer_caching: true
