@@ -1,4 +1,3 @@
-
 FROM circleci/rust
 
 EXPOSE 8000
