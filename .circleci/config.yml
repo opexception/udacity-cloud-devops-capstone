@@ -142,6 +142,7 @@ jobs:
             ls -al
             docker build --tag=udacity-cloud-devops-capstone .
             echo $DOCKER_PWD | docker login -u $DOCKER_USER --password-stdin
+            docker login --help
             docker push $DOCKER_USER/udacity-projects:udacity-cloud-devops-capstone-${CIRCLE_WORKFLOW_ID}
 
 workflows:
