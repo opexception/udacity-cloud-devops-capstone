@@ -72,16 +72,16 @@ jobs:
           name: Cache permission
           command: |
             sudo chown -R $(whoami):$(id -ng) /usr/local/cargo
-      - restore_cache:
-          keys:
-            - v1-cargo-audit-{{ arch }}-${CIRCLE_WORKFLOW_ID}
+      # - restore_cache:
+      #     keys:
+      #       - v1-cargo-audit-{{ arch }}-${CIRCLE_WORKFLOW_ID}
       - run:
           name: Install dependency auditing tool
           command: cargo install cargo-audit
-      - save_cache:
-          paths:
-            - /usr/local/cargo
-          key: v1-cargo-audit-{{ arch }}-${CIRCLE_WORKFLOW_ID}
+      # - save_cache:
+      #     paths:
+      #       - /usr/local/cargo
+      #     key: v1-cargo-audit-{{ arch }}-${CIRCLE_WORKFLOW_ID}
       - run:
           name: Check for known security issues in dependencies
           command: |
@@ -143,7 +143,7 @@ jobs:
             cargo generate-lockfile
       # - restore_cache:
       #     keys:
-      #       - v2-cargo-cache-{{ arch }}-${CIRCLE_WORKFLOW_ID}
+      #       - v3-cargo-cache-{{ arch }}-${CIRCLE_WORKFLOW_ID}
       - run:
           name: Build all targets
           command: |
@@ -157,7 +157,7 @@ jobs:
             - hello_world/target/x86_64-unknown-linux-gnu/release/build
             - hello_world/target/x86_64-unknown-linux-gnu/release/deps
             - hello_world/target/x86_64-unknown-linux-gnu/release/hello_world
-          key: v2-cargo-cache-{{ arch }}-${CIRCLE_WORKFLOW_ID}
+          key: v3-cargo-cache-{{ arch }}-${CIRCLE_WORKFLOW_ID}
 
 
   build-image:
@@ -167,7 +167,7 @@ jobs:
       #- checkout
       - restore_cache:
           keys:
-            - v2-cargo-cache-{{ arch }}-${CIRCLE_WORKFLOW_ID}
+            - v3-cargo-cache-{{ arch }}-${CIRCLE_WORKFLOW_ID}
       - setup_remote_docker
           # Layer caching requires paid CircleCI account
           #docker_layer_caching: true
