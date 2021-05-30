@@ -11,11 +11,15 @@ Resources:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupName: !Sub capstone-${WorkflowID}
-      GroupDescription: Allow port 8000.
+      GroupDescription: Allow port 8000 and 22.
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: 8000
           ToPort: 8000
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
           CidrIp: 0.0.0.0/0
 
   EC2Instance:
