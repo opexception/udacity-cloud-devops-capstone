@@ -275,8 +275,8 @@ workflows:
           requires: [build-image]
       - configure-infrastructure:
           requires: [deploy-infra]
-      - deploy-image:
-          requires: [configure-infrastructure]
+      # - deploy-image:
+      #     requires: [configure-infrastructure]
       # - smoke-test:
       #     requires: [deploy-image]
       # - cloudfront-update:
