@@ -52,19 +52,27 @@
 #     published_ports: [8000:8000]
 #     state: present
 
-# - name: download kubectl
-#   become: yes
-#   shell: |
-#     curl -LO https://storage.googleapis.com/kubernetes-release/release/`curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt`/bin/linux/amd64/kubectl
-#     install kubectl /usr/local/bin/kubectl
-
-- name: download and install minikube & kubectl
+- name: download and install minikube
   become: yes
   shell: |
     curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
     install minikube-linux-amd64 /usr/local/bin/minikube
+
+- name: start minikube
+  become: yes
+  shell: |
     minikube start
-    minikube kubectl -- get po -A
+
+# - name: Download and install kubectl
+#   become: yes
+#   shell: |
+#     minikube kubectl -- get po -A
+
+- name: download and install kubectl
+  become: yes
+  shell: |
+    curl -LO https://storage.googleapis.com/kubernetes-release/release/`curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt`/bin/linux/amd64/kubectl
+    install kubectl /usr/local/bin/kubectl
 
 - name: Deploy docker container
   become: yes
