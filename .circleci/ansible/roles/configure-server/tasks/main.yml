@@ -61,7 +61,7 @@
 - name: start minikube
   # become: yes
   shell: |
-    minikube start
+    minikube start --driver=docker
 
 # - name: Download and install kubectl
 #   become: yes
