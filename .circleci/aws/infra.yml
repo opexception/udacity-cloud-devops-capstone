@@ -1,0 +1,36 @@
+Description: >
+  Udacity Cloud DevOps Engineer Capstone stack.
+
+Parameters:
+  WorkflowID:
+    Description: Unique identifier.
+    Type: String
+
+Resources:
+  InstanceSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub capstone-${WorkflowID}
+      GroupDescription: Allow port 8000.
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 8000
+          ToPort: 8000
+          CidrIp: 0.0.0.0/0
+
+  EC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t2.micro
+      SecurityGroups:
+        - Ref: InstanceSecurityGroup
+      KeyName: udacity
+      ImageId: ami-0ca5c3bd5a268e7db 
+      Tags:
+        - Key: Name
+          Value: !Sub capstone-${WorkflowID}
+
+Outputs:
+  WorkflowID:
+    Description: The workflow ID to identify this stack
+    Value: !Sub "${WorkflowID}"

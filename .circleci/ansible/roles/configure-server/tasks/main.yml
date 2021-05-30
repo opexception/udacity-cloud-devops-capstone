@@ -1,0 +1,52 @@
+---
+
+- name: "update apt packages."
+  become: yes
+  apt:
+    update_cache: yes
+
+- name: "upgrade packages"
+  become: yes
+  apt:
+    upgrade: yes
+
+- name: remove dependencies that are no longer required
+  become: yes
+  apt:
+    autoremove: yes
+
+- name: Add Docker GPG apt Key
+  become: yes
+  apt_key:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    state: present
+
+- name: Add Docker Repository
+  become: yes
+  apt_repository:
+    repo: deb https://download.docker.com/linux/ubuntu xenial stable
+    state: present
+
+- name: Update apt and install docker-ce
+  become: yes
+  apt: 
+    update_cache: yes 
+    name: ["docker-ce"]
+    state: latest
+    install_recommends: yes
+
+- name: "Start Docker Service"
+  ansible.builtin.service:
+    name: docker
+    state: started
+
+- name: Pull Docker image
+  docker_image:
+    name: "{{ docker_image }}"
+    source: pull
+
+- name: Create container
+  docker_container:
+    name: "{{ container_name }}"
+    image: "{{ docker_image }}"
+    state: present

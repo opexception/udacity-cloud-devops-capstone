@@ -195,6 +195,71 @@ jobs:
             docker tag $imageID $DOCKER_USER/udacity-cloud-devops-engineer-capstone:latest
             docker push $DOCKER_USER/udacity-cloud-devops-engineer-capstone:${CIRCLE_WORKFLOW_ID}
 
+  deploy-infra:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - run:
+          name: Ensure infrastructure exists
+          command: |
+            aws cloudformation deploy \
+              --template-file .circleci/aws/infra.yml \
+              --tags project=udacity-capstone workflowid=${CIRCLE_WORKFLOW_ID} \
+              --stack-name capstone-${CIRCLE_WORKFLOW_ID} \
+              --parameter-overrides WorkflowID=${CIRCLE_WORKFLOW_ID}  
+      - run:
+          name: Gather backend IP Address
+          command: |
+              IPADDR=$(aws ec2 describe-instances \
+              --query 'Reservations[*].Instances[*].PublicIpAddress' \
+              --filters Name=tag:Name,Values=capstone-${CIRCLE_WORKFLOW_ID} \
+              --output text)
+              curl -H "Content-Type: text/plain" \
+              -H "token: ${CIRCLE_WORKFLOW_ID}" \
+              --request PUT \
+              --data "${IPADDR}" \
+              https://api.memstash.io/values/deployment
+      - run:
+          name: Add back-end ip to ansible inventory
+          command: |
+            echo "[web]" > ~/project/.circleci/ansible/inventory.txt
+            aws ec2 describe-instances \
+            --query 'Reservations[*].Instances[*].PublicIpAddress' \
+            --filters Name=tag:Name,Values=capstone-${CIRCLE_WORKFLOW_ID} \
+            --output text >> ~/project/.circleci/ansible/inventory.txt
+      # - save_cache:
+      #     paths:
+      #       - ~/project/.circleci/ansible/inventory.txt
+      #     key: << pipeline.id >>-deploy-infra
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - project/.circleci/ansible/inventory.txt
+  
+  configure-infrastructure:
+    docker:
+      - image: python:3.7-alpine3.11
+    steps:
+      - checkout
+      - add_ssh_keys:
+          fingerprints:
+            - "f4:71:b5:ea:3e:fd:b1:fa:31:65:35:c8:e1:c9:3a:da"
+      - attach_workspace:
+          at: ~/
+      - run:
+          name: Install dependencies
+          command: |
+            apk add --update ansible
+            pip3 install --upgrade pip \
+              && pip3 install awscli
+      - run:
+          name: Configure server
+          command: |
+            export ANSIBLE_HOST_KEY_CHECKING=False
+            ansible-playbook -i ~/project/.circleci/ansible/inventory.txt ~/project/.circleci/ansible/configure-server.yml --extra-vars "docker-image=$DOCKER_USER/udacity-cloud-devops-engineer-capstone:${CIRCLE_WORKFLOW_ID} container_name=capstone-${CIRCLE_WORKFLOW_ID}"
+      - destroy-environment  
+
+
 workflows:
   version: 2
   build-test:
@@ -206,10 +271,12 @@ workflows:
       - build-final
       - build-image:
           requires: [build-final, build-and-test, security, format, lint]
-      # - deploy-infra:
-      #     requires: [build-image]
-      # - deploy-image:
-      #     requires: [deploy-infra]
+      - deploy-infra:
+          requires: [build-image]
+      - configure-infrastructure:
+          requires: [deploy-infra]
+      - deploy-image:
+          requires: [configure-infrastructure]
       # - smoke-test:
       #     requires: [deploy-image]
       # - cloudfront-update:
