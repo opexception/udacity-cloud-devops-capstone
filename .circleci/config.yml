@@ -262,6 +262,34 @@ jobs:
             ansible-playbook -i ~/project/.circleci/ansible/inventory.txt ~/project/.circleci/ansible/configure-server.yml --extra-vars "dockerimage=$DOCKER_USER/udacity-cloud-devops-engineer-capstone:${CIRCLE_WORKFLOW_ID} containername=capstone-${CIRCLE_WORKFLOW_ID}"
       - destroy-environment  
 
+  smoke-test:
+    docker:
+      - image: python:3.7-alpine3.11
+    steps:
+      - run:
+          name: Install dependencies
+          command: |
+            apk add curl
+            pip3 install --upgrade pip \
+              && pip3 install awscli
+      - run:
+          name: Get URL
+          command: |
+            BACKEND_IP=$(curl -H "token: ${CIRCLE_WORKFLOW_ID}" --request GET https://api.memstash.io/values/deployment)
+            echo "I think the Backend IP is ${BACKEND_IP}"
+            echo ${BACKEND_IP} > /tmp/backend
+            echo -n "The file /tmp/backend contains IP:"
+            cat /tmp/backend
+      - run:
+          name: smoke test.
+          command: |
+            BACKEND_URL="http://$(cat /tmp/backend):8000"
+            echo "curl-ing ${BACKEND_URL}"
+            if curl ${BACKEND_URL} | grep -q "Hello"
+              then exit 0
+              else exit 1
+            fi 
+      - destroy-environment
 
 workflows:
   version: 2
@@ -278,10 +306,8 @@ workflows:
           requires: [build-image]
       - configure-infrastructure:
           requires: [deploy-infra]
-      # - deploy-image:
-      #     requires: [configure-infrastructure]
-      # - smoke-test:
-      #     requires: [deploy-image]
+      - smoke-test:
+          requires: [configure-infrastructure]
       # - cloudfront-update:
       #     requires: [smoke-test] 
       #     filters:
