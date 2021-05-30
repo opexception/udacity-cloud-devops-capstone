@@ -42,11 +42,12 @@
 
 - name: Pull Docker image
   docker_image:
-    name: "{{ docker-image }}"
+    name: "{{ dockerimage }}"
     source: pull
 
 - name: Create container
   docker_container:
-    name: "{{ container-name }}"
-    image: "{{ docker-image }}"
+    name: "{{ containername }}"
+    image: "{{ dockerimage }}"
+    published_ports: [8000:8000]
     state: present
