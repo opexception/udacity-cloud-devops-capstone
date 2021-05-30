@@ -15,6 +15,13 @@
   apt:
     autoremove: yes
 
+- name: Install dependencies
+  become: yes
+  apt:
+    name: ["apt-transport-https", "ca-certificates", "curl", "gnupg", "lsb-release"]
+    state: latest
+    install_recommends: yes
+
 - name: Add Docker GPG apt Key
   become: yes
   apt_key:
@@ -24,7 +31,7 @@
 - name: Add Docker Repository
   become: yes
   apt_repository:
-    repo: deb https://download.docker.com/linux/ubuntu xenial stable
+    repo: deb https://download.docker.com/linux/ubuntu focal stable
     state: present
 
 - name: Update apt and install docker-ce
@@ -51,6 +58,13 @@
 #     image: "{{ dockerimage }}"
 #     published_ports: [8000:8000]
 #     state: present
+
+- name: Add user ubuntu to docker group
+  become: yes
+  user:
+    name: ubuntu
+    group: docker
+    append: yes
 
 - name: download and install minikube
   become: yes
