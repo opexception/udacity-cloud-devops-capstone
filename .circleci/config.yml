@@ -199,6 +199,7 @@ jobs:
     docker:
       - image: amazon/aws-cli
     steps:
+      - checkout
       - run:
           name: Ensure infrastructure exists
           command: |
@@ -235,6 +236,7 @@ jobs:
           root: ~/
           paths:
             - project/.circleci/ansible/inventory.txt
+      - destroy-environment
   
   configure-infrastructure:
     docker:
