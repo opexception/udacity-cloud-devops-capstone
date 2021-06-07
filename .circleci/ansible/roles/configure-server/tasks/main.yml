@@ -91,6 +91,25 @@
 - name: Deploy docker container
   #become: yes
   shell: |
-    kubectl create deployment hello-world --image={{ dockerimage }}
-    kubectl expose deployment hello-world --port=8000 --name=hello-world-app
-    kubectl port-forward --address 0.0.0.0 service/hello-world-app 8000:8000
+    kubectl create deployment capstone-hello-world --image={{ dockerimage }}
+    kubectl expose deployment capstone-hello-world --port=8000 --name=capstone-hello-world-app
+    running=0
+    firstcheck=0
+    while [ $running -eq 0 ]
+        do
+            if $(kubectl get pods | grep 'capstone-hello-world' | grep -q Running)
+                then 
+                    echo -e "\n...Found running pod"
+                    running=1
+                else
+                    if [ $firstcheck -eq 0 ]
+                        then
+                            echo -n "Pod not ready yet."
+                            firstcheck=1
+                        else
+                            echo -n "."
+                    fi
+                    sleep 1
+            fi
+        done
+    kubectl port-forward --address 0.0.0.0 service/capstone-hello-world-app 8000:8000
