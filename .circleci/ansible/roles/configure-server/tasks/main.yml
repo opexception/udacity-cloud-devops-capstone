@@ -89,7 +89,8 @@
     install kubectl /usr/local/bin/kubectl
 
 - name: Deploy docker container
-  become: yes
+  #become: yes
   shell: |
     kubectl create deployment hello-world --image={{ dockerimage }}
-    kubectl port-forward service/hello-world 8000:8000
+    kubectl expose deployment hello-world --port=8000 --name=hello-world-app
+    kubectl port-forward --address 0.0.0.0 service/hello-world-app 8000:8000
