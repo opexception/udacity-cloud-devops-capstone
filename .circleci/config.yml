@@ -192,8 +192,8 @@ jobs:
             echo "I think the image ID I just built is $imageID"
             echo $DOCKER_PWD | docker login -u $DOCKER_USER --password-stdin
             docker tag $imageID $DOCKER_USER/udacity-cloud-devops-engineer-capstone:${CIRCLE_WORKFLOW_ID}
-            docker tag $imageID $DOCKER_USER/udacity-cloud-devops-engineer-capstone:latest
-            docker tag $imageID $DOCKER_USER/udacity-cloud-devops-engineer-capstone:v1
+            #docker tag $imageID $DOCKER_USER/udacity-cloud-devops-engineer-capstone:latest
+            docker tag $imageID $DOCKER_USER/udacity-cloud-devops-engineer-capstone:v1.0
             docker push -a $DOCKER_USER/udacity-cloud-devops-engineer-capstone:${CIRCLE_WORKFLOW_ID}
 
   deploy-infra:
