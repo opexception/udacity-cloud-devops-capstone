@@ -145,7 +145,7 @@
                     sleep 1
             fi
         done
-    nohup kubectl port-forward --address 0.0.0.0 service/capstone-hello-world-app 8000:8000 > /dev/null &
+    nohup kubectl port-forward --address 0.0.0.0 service/capstone-hello-world 8000:8000 > /dev/null &
 
 - name: Verify deployment rolled out successfully
   shell: |
