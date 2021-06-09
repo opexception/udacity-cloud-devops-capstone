@@ -299,45 +299,45 @@ workflows:
   build-test:
     jobs:
       - build-and-test
-          filters:
-            tags:
-              ignore: /^infra.*/
+          # filters:
+          #   tags:
+          #     ignore: /^infra.*/
       - security
-          filters:
-            tags:
-              ignore: /^infra.*/
+          # filters:
+          #   tags:
+          #     ignore: /^infra.*/
       - format
-          filters:
-            tags:
-              ignore: /^infra.*/
+          # filters:
+          #   tags:
+          #     ignore: /^infra.*/
       - lint
-          filters:
-            tags:
-              ignore: /^infra.*/
+          # filters:
+          #   tags:
+          #     ignore: /^infra.*/
       - build-final
-          filters:
-            tags:
-              ignore: /^infra.*/
+          # filters:
+          #   tags:
+          #     ignore: /^infra.*/
       - build-image:
           requires: [build-final, build-and-test, security, format, lint]
-          filters:
-            tags:
-              ignore: /^infra.*/
+          # filters:
+          #   tags:
+          #     ignore: /^infra.*/
       - deploy-infra:
           requires: [build-image]
-          filters:
-            tags:
-              only: /^infra.*/
+          # filters:
+          #   tags:
+          #     only: /^infra.*/
       - configure-infrastructure:
           requires: [deploy-infra]
-          filters:
-            tags:
-              only: /^infra.*/
+          # filters:
+          #   tags:
+          #     only: /^infra.*/
       - smoke-test:
           requires: [configure-infrastructure]
-          filters:
-            tags:
-              ignore: /^infra.*/
+          # filters:
+          #   tags:
+          #     ignore: /^infra.*/
       # - blue-green-deploy:
       #     requires: [smoke-test] 
       #     filters:
