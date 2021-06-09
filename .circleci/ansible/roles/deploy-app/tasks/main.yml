@@ -1,0 +1,44 @@
+---
+
+- name: Deploy docker container
+  #become: yes
+  shell: |
+    kubectl create deployment {{ containername }} --image={{ dockerimage }}
+
+- name: Expose docker app
+  #become: yes
+  shell: |
+    running=0
+    firstcheck=0
+    while [ $running -eq 0 ]
+        do
+            if $(kubectl get pods | grep '{{ containername }}' | grep -q Running)
+                then 
+                    echo -e "\n...Found running pod"
+                    running=1
+                else
+                    if [ $firstcheck -eq 0 ]
+                        then
+                            echo -n "Pod not ready yet."
+                            firstcheck=1
+                        else
+                            echo -n "."
+                    fi
+                    sleep 1
+            fi
+        done
+    kubectl expose deployment {{ containername }} --type=NodePort --port=8000
+
+- name: Verify deployment rolled out successfully
+  shell: |
+    kubectl rollout status deployment/{{ containername }}
+
+# This needs to happen after smoketest
+# - name: Setup k8s port forward for app
+#   #become: yes
+#   shell: |
+#     nohup kubectl port-forward --address 0.0.0.0 service/{{ containername }} 8000:8000 > /dev/null &
+
+# - name: Checking things are working before moving on
+#   shell: |
+#     curl http://localhost:8000

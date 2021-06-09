@@ -20,7 +20,7 @@ commands:
 
 # rust circleci setup gleaned from https://gist.github.com/LukeMathWalker/6153b07c4528ca1db416f24b09038fca
 jobs:
-  build-and-test:
+  build-and-test-app:
     docker:
       - image: circleci/rust
     environment:
@@ -59,7 +59,7 @@ jobs:
             cd hello_world
             cargo test
 
-  security:
+  security-app:
     docker:
       - image: circleci/rust
     steps:
@@ -88,7 +88,7 @@ jobs:
             cd hello_world
             cargo audit
 
-  format:
+  check-format-app:
     docker:
       - image: circleci/rust
     steps:
@@ -106,7 +106,7 @@ jobs:
             cd hello_world
             cargo fmt --all -- --check
 
-  lint:
+  lint-app:
     docker:
       - image: circleci/rust
     steps:
@@ -124,7 +124,7 @@ jobs:
             cd hello_world
             cargo clippy -- -D warnings
   
-  build-final:
+  build-final-app:
     docker:
       - image: circleci/rust
     environment:
@@ -192,11 +192,9 @@ jobs:
             echo "I think the image ID I just built is $imageID"
             echo $DOCKER_PWD | docker login -u $DOCKER_USER --password-stdin
             docker tag $imageID $DOCKER_USER/udacity-cloud-devops-engineer-capstone:${CIRCLE_WORKFLOW_ID}
-            #docker tag $imageID $DOCKER_USER/udacity-cloud-devops-engineer-capstone:latest
-            docker tag $imageID $DOCKER_USER/udacity-cloud-devops-engineer-capstone:v1.0
             docker push -a $DOCKER_USER/udacity-cloud-devops-engineer-capstone
 
-  deploy-infra:
+  deploy-infrastructure-init:
     docker:
       - image: amazon/aws-cli
     steps:
@@ -239,8 +237,40 @@ jobs:
           paths:
             - project/.circleci/ansible/inventory.txt
       - destroy-environment
+
+  discover-infrastructure:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - run: yum -y install tar gzip
+      - run:
+          name: Gather backend IP Address
+          command: |
+              IPADDR=$(aws ec2 describe-instances \
+              --query 'Reservations[*].Instances[*].PublicIpAddress' \
+              --filters Name=tag:Name,Values=capstone-${CIRCLE_WORKFLOW_ID} \
+              --output text)
+              curl -H "Content-Type: text/plain" \
+              -H "token: ${CIRCLE_WORKFLOW_ID}" \
+              --request PUT \
+              --data "${IPADDR}" \
+              https://api.memstash.io/values/deployment
+      - run:
+          name: Add back-end ip to ansible inventory
+          command: |
+            echo "[web]" > ~/project/.circleci/ansible/inventory.txt
+            aws ec2 describe-instances \
+            --query 'Reservations[*].Instances[*].PublicIpAddress' \
+            --filters Name=tag:Name,Values=capstone-${CIRCLE_WORKFLOW_ID} \
+            --output text >> ~/project/.circleci/ansible/inventory.txt
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - project/.circleci/ansible/inventory.txt
+      - destroy-environment
   
-  configure-infrastructure:
+  configure-infrastructure-init:
     docker:
       - image: python:3.7-alpine3.11
     steps:
@@ -260,8 +290,31 @@ jobs:
           name: Configure server
           command: |
             export ANSIBLE_HOST_KEY_CHECKING=False
-            ansible-playbook -i ~/project/.circleci/ansible/inventory.txt ~/project/.circleci/ansible/configure-server.yml --extra-vars "dockerimage=$DOCKER_USER/udacity-cloud-devops-engineer-capstone:${CIRCLE_WORKFLOW_ID} containername=capstone-${CIRCLE_WORKFLOW_ID}"
+            ansible-playbook -i ~/project/.circleci/ansible/inventory.txt ~/project/.circleci/ansible/configure-server.yml --extra-vars "dockerimage=$DOCKER_USER/udacity-cloud-devops-engineer-capstone:v1.0 containername=udacity-cloud-devops-engineer-capstone-v1"
       - destroy-environment  
+
+configure-infrastructure:
+    docker:
+      - image: python:3.7-alpine3.11
+    steps:
+      - checkout
+      - add_ssh_keys:
+          fingerprints:
+            - "f4:71:b5:ea:3e:fd:b1:fa:31:65:35:c8:e1:c9:3a:da"
+      - attach_workspace:
+          at: ~/
+      - run:
+          name: Install dependencies
+          command: |
+            apk add --update ansible
+            pip3 install --upgrade pip \
+              && pip3 install awscli
+      - run:
+          name: Configure server
+          command: |
+            export ANSIBLE_HOST_KEY_CHECKING=False
+            ansible-playbook -i ~/project/.circleci/ansible/inventory.txt ~/project/.circleci/ansible/deploy-app.yml --extra-vars "dockerimage=$DOCKER_USER/udacity-cloud-devops-engineer-capstone:${CIRCLE_WORKFLOW_ID} containername=udacity-cloud-devops-engineer-capstone-${CIRCLE_WORKFLOW_ID}"
+      - destroy-environment 
 
   smoke-test:
     docker:
@@ -293,54 +346,98 @@ jobs:
       - destroy-environment
   
   # blue-green-deploy:
+    docker:
+      - image: python:3.7-alpine3.11
+    steps:
+      - checkout
+      - add_ssh_keys:
+          fingerprints:
+            - "f4:71:b5:ea:3e:fd:b1:fa:31:65:35:c8:e1:c9:3a:da"
+      - attach_workspace:
+          at: ~/
+      - run:
+          name: Install dependencies
+          command: |
+            apk add --update ansible
+            pip3 install --upgrade pip \
+              && pip3 install awscli
+      - run:
+          name: Configure server
+          command: |
+            export ANSIBLE_HOST_KEY_CHECKING=False
+            ansible-playbook -i ~/project/.circleci/ansible/inventory.txt ~/project/.circleci/ansible/blue-green.yml --extra-vars "dockerimage=$DOCKER_USER/udacity-cloud-devops-engineer-capstone:${CIRCLE_WORKFLOW_ID} containername=capstone-${CIRCLE_WORKFLOW_ID} WORKFLOW_ID=${CIRCLE_WORKFLOW_ID}"
+      - destroy-environment  
+      #export BlueVersion=$(kubectl get service demochat -o=jsonpath='{.spec.selector.version}' --namespace=${NAMESPACE})
+      #kubectl get deployment demochat-$BlueVersion -o=yaml --namespace=${NAMESPACE} | sed -e "s/$BlueVersion/${{CF_SHORT_REVISION}}/g" | kubectl apply --namespace=${NAMESPACE} -f -
+      #kubectl rollout status deployment/demochat-${{CF_SHORT_REVISION}} --namespace=${NAMESPACE}
+      #kubectl get service demochat -o=yaml --namespace=${NAMESPACE} | sed -e "s/$BlueVersion/${{CF_SHORT_REVISION}}/g" | kubectl apply --namespace=${NAMESPACE} -f -
+      #kubectl delete deployment demochat-$BlueVersion --namespace=bluegreen #Delete blue version
+
 
 workflows:
   version: 2
-  build-test:
+  deploy-app:
     jobs:
-      - build-and-test
-          # filters:
-          #   tags:
-          #     ignore: /^infra.*/
-      - security
-          # filters:
-          #   tags:
-          #     ignore: /^infra.*/
-      - format
-          # filters:
-          #   tags:
-          #     ignore: /^infra.*/
-      - lint
-          # filters:
-          #   tags:
-          #     ignore: /^infra.*/
-      - build-final
-          # filters:
-          #   tags:
-          #     ignore: /^infra.*/
+      - build-and-test-app:
+          filters:
+            tags:
+              ignore: /^infra.*/
+      - security-app:
+          filters:
+            tags:
+              ignore: /^infra.*/
+      - check-format-app:
+          filters:
+            tags:
+              ignore: /^infra.*/
+      - lint-app:
+          filters:
+            tags:
+              ignore: /^infra.*/
+      - build-final-app:
+          filters:
+            tags:
+              ignore: /^infra.*/
       - build-image:
           requires: [build-final, build-and-test, security, format, lint]
-          # filters:
-          #   tags:
-          #     ignore: /^infra.*/
-      - deploy-infra:
+          filters:
+            tags:
+              ignore: /^infra.*/
+      - deploy-infrastructure:
           requires: [build-image]
-          # filters:
-          #   tags:
-          #     only: /^infra.*/
+          filters:
+            tags:
+              ignore: /^infra.*/
       - configure-infrastructure:
           requires: [deploy-infra]
-          # filters:
-          #   tags:
-          #     only: /^infra.*/
+          filters:
+            tags:
+              ignore: /^infra.*/
       - smoke-test:
           requires: [configure-infrastructure]
-          # filters:
-          #   tags:
-          #     ignore: /^infra.*/
+          filters:
+            tags:
+              ignore: /^infra.*/
       # - blue-green-deploy:
       #     requires: [smoke-test] 
       #     filters:
       #       branches:
       #         only: [master]
+      #         ignore: /^infra.*/
+  deploy-infra:
+    jobs:
+      - deploy-infrastructure-init:
+          filters:
+            tags:
+              only: /^infra.*/
+      - configure-infrastructure-init:
+          requires: [deploy-infrastructure-init]
+          filters:
+            tags:
+              only: /^infra.*/
+      - smoke-test:
+          requires: [configure-infrastructure-init]
+          filters:
+            tags:
+              only: /^infra.*/
 

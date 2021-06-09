@@ -47,18 +47,6 @@
     name: docker
     state: started
 
-# - name: Pull Docker image
-#   docker_image:
-#     name: "{{ dockerimage }}"
-#     source: pull
-
-# - name: Create container
-#   docker_container:
-#     name: "{{ containername }}"
-#     image: "{{ dockerimage }}"
-#     published_ports: [8000:8000]
-#     state: present
-
 - name: Add user ubuntu to docker group
   become: yes
   user:
@@ -73,14 +61,8 @@
     install minikube-linux-amd64 /usr/local/bin/minikube
 
 - name: start minikube
-  # become: yes
   shell: |
     minikube start --driver=docker
-
-# - name: Download and install kubectl
-#   become: yes
-#   shell: |
-#     minikube kubectl -- get po -A
 
 - name: download and install kubectl
   become: yes
@@ -89,19 +71,16 @@
     install kubectl /usr/local/bin/kubectl
 
 - name: Deploy docker container
-  #become: yes
   shell: |
-    kubectl create deployment capstone-hello-world --image={{ dockerimage }}
+    kubectl create deployment {{ containername }} --image={{ dockerimage }}
 
 - name: Expose docker app
-  #become: yes
   shell: |
-    # kubectl expose deployment capstone-hello-world --port=8000 --name=capstone-hello-world-app
     running=0
     firstcheck=0
     while [ $running -eq 0 ]
         do
-            if $(kubectl get pods | grep 'capstone-hello-world' | grep -q Running)
+            if $(kubectl get pods | grep '{{ containername }}' | grep -q Running)
                 then 
                     echo -e "\n...Found running pod"
                     running=1
@@ -116,21 +95,16 @@
                     sleep 1
             fi
         done
-    kubectl expose deployment capstone-hello-world --type=NodePort --port=8000
-
-# - name: Setup minikube service
-#   shell: |
-#     minikube service capstone-hello-world
+    kubectl expose deployment {{ containername }} --type=NodePort --port=8000
 
 - name: Setup k8s port forward for app
-  #become: yes
   shell: |
     # sleep 120
     running=0
     firstcheck=0
     while [ $running -eq 0 ]
         do
-            if $(kubectl get pods | grep 'capstone-hello-world' | grep -q Running)
+            if $(kubectl get pods | grep '{{ containername }}' | grep -q Running)
                 then 
                     echo -e "\n...Found running pod"
                     running=1
@@ -145,11 +119,11 @@
                     sleep 1
             fi
         done
-    nohup kubectl port-forward --address 0.0.0.0 service/capstone-hello-world 8000:8000 > /dev/null &
+    nohup kubectl port-forward --address 0.0.0.0 service/{{ containername }} 8000:8000 > /dev/null &
 
 - name: Verify deployment rolled out successfully
   shell: |
-    kubectl rollout status deployment/capstone-hello-world
+    kubectl rollout status deployment/{{ containername }}
 
 - name: Checking things are working before moving on
   shell: |
