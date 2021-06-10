@@ -5,7 +5,7 @@ extern crate rocket;
 
 #[get("/")]
 fn index() -> &'static str {
-    "Hello, Udacity Reviewer!"
+    "Greetings, Udacity Reviewer!"
 }
 
 fn main() {
