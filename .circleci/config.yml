@@ -396,13 +396,13 @@ workflows:
           filters:
             tags:
               ignore: /^infra.*/
-      - deploy-infrastructure:
+      - discover-infrastructure:
           requires: [build-image]
           filters:
             tags:
               ignore: /^infra.*/
       - configure-infrastructure:
-          requires: [deploy-infra]
+          requires: [discover-infrastructure]
           filters:
             tags:
               ignore: /^infra.*/
