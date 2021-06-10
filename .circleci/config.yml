@@ -366,13 +366,6 @@ configure-infrastructure:
           command: |
             export ANSIBLE_HOST_KEY_CHECKING=False
             ansible-playbook -i ~/project/.circleci/ansible/inventory.txt ~/project/.circleci/ansible/blue-green.yml --extra-vars "dockerimage=$DOCKER_USER/udacity-cloud-devops-engineer-capstone:${CIRCLE_WORKFLOW_ID} containername=capstone-${CIRCLE_WORKFLOW_ID} WORKFLOW_ID=${CIRCLE_WORKFLOW_ID}"
-      - destroy-environment  
-      #export BlueVersion=$(kubectl get service demochat -o=jsonpath='{.spec.selector.version}' --namespace=${NAMESPACE})
-      #kubectl get deployment demochat-$BlueVersion -o=yaml --namespace=${NAMESPACE} | sed -e "s/$BlueVersion/${{CF_SHORT_REVISION}}/g" | kubectl apply --namespace=${NAMESPACE} -f -
-      #kubectl rollout status deployment/demochat-${{CF_SHORT_REVISION}} --namespace=${NAMESPACE}
-      #kubectl get service demochat -o=yaml --namespace=${NAMESPACE} | sed -e "s/$BlueVersion/${{CF_SHORT_REVISION}}/g" | kubectl apply --namespace=${NAMESPACE} -f -
-      #kubectl delete deployment demochat-$BlueVersion --namespace=bluegreen #Delete blue version
-
 
 workflows:
   version: 2
@@ -418,12 +411,12 @@ workflows:
           filters:
             tags:
               ignore: /^infra.*/
-      # - blue-green-deploy:
-      #     requires: [smoke-test] 
-      #     filters:
-      #       branches:
-      #         only: [master]
-      #         ignore: /^infra.*/
+      - blue-green-deploy:
+          requires: [smoke-test] 
+          filters:
+            branches:
+              only: [master]
+              ignore: /^infra.*/
   deploy-infra:
     jobs:
       - deploy-infrastructure-init:
