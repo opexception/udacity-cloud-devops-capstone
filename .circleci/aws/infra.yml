@@ -15,7 +15,7 @@ Resources:
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: 8000
-          ToPort: 8000
+          ToPort: 8001
           CidrIp: 0.0.0.0/0
         - IpProtocol: tcp
           FromPort: 22
@@ -25,6 +25,7 @@ Resources:
           FromPort: 8080
           ToPort: 8080
           CidrIp: 127.0.0.1/32
+
 
   EC2Instance:
     Type: AWS::EC2::Instance
