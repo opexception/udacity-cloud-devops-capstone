@@ -2,7 +2,7 @@
 
 #[macro_use]
 extern crate rocket;
-Oops heres an error!
+
 #[get("/")]
 fn index() -> &'static str {
     "Greetings, Udacity Reviewer!"
