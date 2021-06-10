@@ -374,42 +374,51 @@ workflows:
       - build-and-test-app:
           filters:
             tags:
+              only: /^app.*/
               ignore: /^infra.*/
       - security-app:
           filters:
             tags:
+              only: /^app.*/
               ignore: /^infra.*/
       - check-format-app:
           filters:
             tags:
+              only: /^app.*/
               ignore: /^infra.*/
       - lint-app:
           filters:
             tags:
+              only: /^app.*/
               ignore: /^infra.*/
       - build-final-app:
           filters:
             tags:
+              only: /^app.*/
               ignore: /^infra.*/
       - build-image:
           requires: [build-final-app, build-and-test-app, security-app, check-format-app, lint-app]
           filters:
             tags:
+              only: /^app.*/
               ignore: /^infra.*/
       - discover-infrastructure:
           requires: [build-image]
           filters:
             tags:
+              only: /^app.*/
               ignore: /^infra.*/
       - configure-infrastructure:
           requires: [discover-infrastructure]
           filters:
             tags:
+              only: /^app.*/
               ignore: /^infra.*/
       - smoke-test:
           requires: [configure-infrastructure]
           filters:
             tags:
+              only: /^app.*/
               ignore: /^infra.*/
       - blue-green-deploy:
           requires: [smoke-test] 
@@ -417,6 +426,7 @@ workflows:
             branches:
               only: [main]
             tags:
+              only: /^app.*/
               ignore: /^infra.*/
   deploy-infra:
     jobs:
