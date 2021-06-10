@@ -424,14 +424,17 @@ workflows:
           filters:
             tags:
               only: /^infra.*/
+              ignore: /^app.*/
       - configure-infrastructure-init:
           requires: [deploy-infrastructure-init]
           filters:
             tags:
               only: /^infra.*/
+              ignore: /^app.*/
       - smoke-test:
           requires: [configure-infrastructure-init]
           filters:
             tags:
               only: /^infra.*/
+              ignore: /^app.*/
 
