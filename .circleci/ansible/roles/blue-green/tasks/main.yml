@@ -16,8 +16,8 @@
   shell: |
     echo $(kubectl get svc | grep 8000: | grep -v "{{ WORKFLOW_ID }}"| awk '{print $1}') > /tmp/blue.container
     echo {{ containername }} > /tmp/green.container
-    echo $(ps aux | grep "port-forward" | grep "8000:8000" | grep "$BLUE" | awk '{print $2}') > /tmp/blue.pid
-    echo $(ps aux | grep "port-forward" | grep "8001:8000" | grep "$GREEN" | awk '{print $2}') > /tmp/green.pid
+    echo $(ps aux | grep "port-forward" | grep "8000:8000" | grep $(cat /tmp/blue.container) | awk '{print $2}') > /tmp/blue.pid
+    echo $(ps aux | grep "port-forward" | grep "8001:8000" | grep $(cat /tmp/green.container) | awk '{print $2}') > /tmp/green.pid
 
 - name: Stop blue portforward
   shell: |
