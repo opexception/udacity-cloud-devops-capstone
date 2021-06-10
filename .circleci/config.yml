@@ -459,7 +459,7 @@ workflows:
               only: /^app.*/
               ignore: /^infra.*/
       - discover-infrastructure:
-          requires: [build-image]
+          #requires: [build-image]
           filters:
             tags:
               only: /^app.*/
