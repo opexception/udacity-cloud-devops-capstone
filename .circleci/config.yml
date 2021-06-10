@@ -465,7 +465,7 @@ workflows:
               only: /^app.*/
               ignore: /^infra.*/
       - configure-infrastructure:
-          requires: [discover-infrastructure]
+          requires: [discover-infrastructure, build-image]
           filters:
             tags:
               only: /^app.*/
