@@ -1,16 +1,43 @@
 ---
 
-- name: Blue Green deploy
+# - name: Blue Green deploy
+#   shell: |
+#     export BLUE=$(kubectl get svc | grep 8000: | grep -v "{{ WORKFLOW_ID }}"| awk '{print $1}')
+#     export GREEN={{ containername }}
+#     export BLUEPID=$(ps aux | grep "port-forward" | grep "8000:8000" | grep "$BLUE" | awk '{print $2}')
+#     export GREENPID=$(ps aux | grep "port-forward" | grep "8001:8000" | grep "$GREEN" | awk '{print $2}')
+#     kill $BLUEPID
+#     nohup kubectl port-forward --address 0.0.0.0 service/$GREEN 8000:8000 > /dev/null &
+#     kubectl delete deployment $BLUE
+#     kubectl delete service $BLUE
+#     kill $GREENPID  # this is the non-production port on 8001 that we used for smoke testing
+
+- name: Gather details
   shell: |
-    export BLUE=$(kubectl get svc | grep 8000: | grep -v "{{ WORKFLOW_ID }}"| awk '{print $1}')
-    export GREEN={{ containername }}
-    export BLUE-PID=$(ps aux | grep "port-forward" | grep "8000:8000" | grep "$BLUE" | awk '{print $2}')
-    export GREEN-PID=$(ps aux | grep "port-forward" | grep "8001:8000" | grep "$GREEN" | awk '{print $2}')
-    kill $BLUE-PID
-    nohup kubectl port-forward --address 0.0.0.0 service/$GREEN 8000:8000 > /dev/null &
-    kubectl delete deployment $BLUE
-    kubectl delete service $BLUE
-    kill $GREEN-PID  # this is the non-production port on 8001 that we used for smoke testing
+    echo $(kubectl get svc | grep 8000: | grep -v "{{ WORKFLOW_ID }}"| awk '{print $1}') > /tmp/blue.container
+    echo {{ containername }} > /tmp/green.container
+    echo $(ps aux | grep "port-forward" | grep "8000:8000" | grep "$BLUE" | awk '{print $2}') > /tmp/blue.pid
+    echo $(ps aux | grep "port-forward" | grep "8001:8000" | grep "$GREEN" | awk '{print $2}') > /tmp/green.pid
+
+- name: Stop blue portforward
+  shell: |
+    kill $(cat /tmp/blue.pid)
+
+- name: Start Green portforward
+  shell: |
+    kubectl port-forward --address 0.0.0.0 service/$(cat /tmp/green.container) 8000:8000 > /dev/null &
+
+- name: Delete blue deployment
+  shell: |
+    kubectl delete deployment $(cat /tmp/blue.container)
+
+- name: Delete blue service
+  shell: |
+    kubectl delete service $(cat /tmp/blue.container)
+
+- name: Stop green pre-production portforward
+  shell: |
+    kill $(cat /tmp/green.pid)
 
 - name: Making sure we didn't break it
   shell: |
