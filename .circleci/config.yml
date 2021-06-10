@@ -293,7 +293,7 @@ jobs:
             ansible-playbook -i ~/project/.circleci/ansible/inventory.txt ~/project/.circleci/ansible/configure-server.yml --extra-vars "dockerimage=$DOCKER_USER/udacity-cloud-devops-engineer-capstone:v1.0 containername=udacity-cloud-devops-engineer-capstone-v1"
       - destroy-environment  
 
-configure-infrastructure:
+  configure-infrastructure:
     docker:
       - image: python:3.7-alpine3.11
     steps:
@@ -316,7 +316,7 @@ configure-infrastructure:
             ansible-playbook -i ~/project/.circleci/ansible/inventory.txt ~/project/.circleci/ansible/deploy-app.yml --extra-vars "dockerimage=$DOCKER_USER/udacity-cloud-devops-engineer-capstone:${CIRCLE_WORKFLOW_ID} containername=udacity-cloud-devops-engineer-capstone-${CIRCLE_WORKFLOW_ID}"
       - destroy-environment 
 
-smoke-test:
+  smoke-test:
     docker:
       - image: python:3.7-alpine3.11
     steps:
@@ -345,7 +345,7 @@ smoke-test:
             fi 
       - destroy-environment
   
-  # blue-green-deploy:
+  blue-green-deploy:
     docker:
       - image: python:3.7-alpine3.11
     steps:
