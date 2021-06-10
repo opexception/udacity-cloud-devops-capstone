@@ -33,11 +33,10 @@
   shell: |
     kubectl rollout status deployment/{{ containername }}
 
-# This needs to happen after smoketest
-# - name: Setup k8s port forward for app
-#   #become: yes
-#   shell: |
-#     nohup kubectl port-forward --address 0.0.0.0 service/{{ containername }} 8000:8000 > /dev/null &
+# start up on different port to smoke test
+- name: Setup k8s port forward for app smoke test
+  shell: |
+    nohup kubectl port-forward --address 0.0.0.0 service/{{ containername }} 8001:8000 > /dev/null &
 
 # - name: Checking things are working before moving on
 #   shell: |

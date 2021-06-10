@@ -4,6 +4,7 @@
   shell: |
     export BLUE=$(kubectl get svc | grep 8000: | grep -v "{{ WORKFLOW_ID }}"| awk '{print $1}')
     export BLUEPORTFWD=$(ps aux | grep "port-forward" | grep $BLUE | awk '{print $2}')
+    kill -9 $(ps aux | grep "port-forward" | grep "{{ containername }}" | awk '{print $2}')
     kill -9 ${BLUEPORTFWD} && nohup kubectl port-forward --address 0.0.0.0 service/{{ containername }} 8000:8000 > /dev/null &
     kubectl delete deployment $BLUE
     kubectl delete service $BLUE

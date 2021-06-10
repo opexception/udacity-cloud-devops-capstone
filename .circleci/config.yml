@@ -290,7 +290,7 @@ jobs:
           name: Configure server
           command: |
             export ANSIBLE_HOST_KEY_CHECKING=False
-            ansible-playbook -i ~/project/.circleci/ansible/inventory.txt ~/project/.circleci/ansible/configure-server.yml --extra-vars "dockerimage=$DOCKER_USER/udacity-cloud-devops-engineer-capstone:v1.0 containername=udacity-cloud-devops-engineer-capstone-v1"
+            ansible-playbook -i ~/project/.circleci/ansible/inventory.txt ~/project/.circleci/ansible/configure-server.yml --extra-vars "dockerimage=$DOCKER_USER/udacity-cloud-devops-engineer-capstone:v1.0 containername=capstone-v1"
       - destroy-environment  
 
   configure-infrastructure:
@@ -313,10 +313,10 @@ jobs:
           name: Configure server
           command: |
             export ANSIBLE_HOST_KEY_CHECKING=False
-            ansible-playbook -i ~/project/.circleci/ansible/inventory.txt ~/project/.circleci/ansible/deploy-app.yml --extra-vars "dockerimage=$DOCKER_USER/udacity-cloud-devops-engineer-capstone:${CIRCLE_WORKFLOW_ID} containername=udacity-cloud-devops-engineer-capstone-${CIRCLE_WORKFLOW_ID}"
+            ansible-playbook -i ~/project/.circleci/ansible/inventory.txt ~/project/.circleci/ansible/deploy-app.yml --extra-vars "dockerimage=$DOCKER_USER/udacity-cloud-devops-engineer-capstone:${CIRCLE_WORKFLOW_ID} containername=capstone-${CIRCLE_WORKFLOW_ID}"
       - destroy-environment 
 
-  smoke-test:
+  smoke-test-init:
     docker:
       - image: python:3.7-alpine3.11
     steps:
@@ -344,7 +344,63 @@ jobs:
               else exit 1
             fi 
       - destroy-environment
+
+  smoke-test-app:
+    docker:
+      - image: python:3.7-alpine3.11
+    steps:
+      - run:
+          name: Install dependencies
+          command: |
+            apk add curl
+            pip3 install --upgrade pip \
+              && pip3 install awscli
+      - run:
+          name: Get URL
+          command: |
+            BACKEND_IP=$(curl -H "token: ${CIRCLE_WORKFLOW_ID}" --request GET https://api.memstash.io/values/deployment)
+            echo "I think the Backend IP is ${BACKEND_IP}"
+            echo ${BACKEND_IP} > /tmp/backend
+            echo -n "The file /tmp/backend contains IP:"
+            cat /tmp/backend
+      - run:
+          name: smoke test.
+          command: |
+            BACKEND_URL="http://$(cat /tmp/backend):8001"
+            echo "curl-ing ${BACKEND_URL}"
+            if curl ${BACKEND_URL} | grep -q "Greetings"
+              then exit 0
+              else exit 1
+            fi 
   
+  smoke-test-final:
+    docker:
+      - image: python:3.7-alpine3.11
+    steps:
+      - run:
+          name: Install dependencies
+          command: |
+            apk add curl
+            pip3 install --upgrade pip \
+              && pip3 install awscli
+      - run:
+          name: Get URL
+          command: |
+            BACKEND_IP=$(curl -H "token: ${CIRCLE_WORKFLOW_ID}" --request GET https://api.memstash.io/values/deployment)
+            echo "I think the Backend IP is ${BACKEND_IP}"
+            echo ${BACKEND_IP} > /tmp/backend
+            echo -n "The file /tmp/backend contains IP:"
+            cat /tmp/backend
+      - run:
+          name: smoke test.
+          command: |
+            BACKEND_URL="http://$(cat /tmp/backend):8000"
+            echo "curl-ing ${BACKEND_URL}"
+            if curl ${BACKEND_URL} | grep -q "Greetings"
+              then exit 0
+              else exit 1
+            fi 
+
   blue-green-deploy:
     docker:
       - image: python:3.7-alpine3.11
@@ -414,17 +470,23 @@ workflows:
             tags:
               only: /^app.*/
               ignore: /^infra.*/
-      - smoke-test:
+      - smoke-test-app:
           requires: [configure-infrastructure]
           filters:
             tags:
               only: /^app.*/
               ignore: /^infra.*/
       - blue-green-deploy:
-          requires: [smoke-test] 
+          requires: [smoke-test-app] 
           filters:
             branches:
               only: [main]
+            tags:
+              only: /^app.*/
+              ignore: /^infra.*/
+      - smoke-test-final:
+          requires: [blue-green-deploy]
+          filters:
             tags:
               only: /^app.*/
               ignore: /^infra.*/
@@ -441,7 +503,7 @@ workflows:
             tags:
               only: /^infra.*/
               ignore: /^app.*/
-      - smoke-test:
+      - smoke-test-init:
           requires: [configure-infrastructure-init]
           filters:
             tags:
