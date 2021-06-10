@@ -473,19 +473,22 @@ workflows:
     jobs:
       - deploy-infrastructure-init:
           filters:
+            branches:
+              ignore: /.*/
             tags:
               only: /^infra.*/
-              ignore: /^app.*/
       - configure-infrastructure-init:
           requires: [deploy-infrastructure-init]
           filters:
+            branches:
+              ignore: /.*/
             tags:
               only: /^infra.*/
-              ignore: /^app.*/
       - smoke-test-init:
           requires: [configure-infrastructure-init]
           filters:
+            branches:
+              ignore: /.*/
             tags:
               only: /^infra.*/
-              ignore: /^app.*/
 
