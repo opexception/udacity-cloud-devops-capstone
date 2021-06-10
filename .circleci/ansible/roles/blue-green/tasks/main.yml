@@ -20,13 +20,17 @@
     echo $(ps aux | grep "port-forward" | grep -v grep | grep "8001:8000" | grep $(cat /tmp/green.container) | awk '{print $2}') > /tmp/green.pid
     echo $(ps aux | grep "port-forward" | grep -v grep | grep "8001:8000" | grep $(cat /tmp/green.container)) > /tmp/green.pid.ts
 
+- name: Stop green pre-production portforward
+  shell: |
+    kill $(cat /tmp/green.pid)
+
 - name: Stop blue portforward
   shell: |
     kill $(cat /tmp/blue.pid)
 
 - name: Start Green portforward
   shell: |
-    kubectl port-forward --address 0.0.0.0 service/$(cat /tmp/green.container) 8000:8000 > /dev/null &
+    nohup kubectl port-forward --address 0.0.0.0 service/$(cat /tmp/green.container) 8000:8000 > /dev/null &
 
 - name: Delete blue deployment
   shell: |
@@ -35,10 +39,6 @@
 - name: Delete blue service
   shell: |
     kubectl delete service $(cat /tmp/blue.container)
-
-- name: Stop green pre-production portforward
-  shell: |
-    kill $(cat /tmp/green.pid)
 
 - name: Making sure we didn't break it
   shell: |
