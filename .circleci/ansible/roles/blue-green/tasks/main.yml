@@ -3,13 +3,12 @@
 - name: Blue Green deploy
   shell: |
     export BLUE=$(kubectl get svc | grep 8000: | grep -v "{{ WORKFLOW_ID }}"| awk '{print $1}')
-    export BLUEPORTFWD=$(ps aux | grep "port-forward" | grep $BLUE | awk '{print $2}')
-    kill -9 $(ps aux | grep "port-forward" | grep "{{ containername }}" | awk '{print $2}')
-    kill -9 ${BLUEPORTFWD} && nohup kubectl port-forward --address 0.0.0.0 service/{{ containername }} 8000:8000 > /dev/null &
+    export GREEN={{ containername }}
+    kill -9 $(ps aux | grep "port-forward" | grep "$GREEN" | awk '{print $2}') # this is the non-production port on 8001 that we used for smoke testing
+    kill -9 $(ps aux | grep "port-forward" | grep "$BLUE" | awk '{print $2}')
+    nohup kubectl port-forward --address 0.0.0.0 service/$GREEN 8000:8000 > /dev/null &
     kubectl delete deployment $BLUE
     kubectl delete service $BLUE
-  register: ps
-  failed_when: "ps.rc not in [ -9 ]"
 
 - name: Making sure we didn't break it
   shell: |
