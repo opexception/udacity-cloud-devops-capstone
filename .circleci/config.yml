@@ -141,9 +141,6 @@ jobs:
           command: |
             cd hello_world
             cargo generate-lockfile
-      # - restore_cache:
-      #     keys:
-      #       - build-cache-{{ arch }}-<< pipeline.id >>
       - run:
           name: Build all targets
           command: |
@@ -152,10 +149,6 @@ jobs:
             rustup target add x86_64-unknown-linux-gnu
             cargo build --target=x86_64-unknown-linux-gnu --release
             ls -al target/x86_64-unknown-linux-gnu/release
-      # - save_cache:
-      #     paths:
-      #       - hello_world/target/x86_64-unknown-linux-gnu/release/hello_world
-      #     key: build-cache-{{ arch }}-<< pipeline.id >>
       - persist_to_workspace:
           root: ~/project
           paths:
@@ -167,9 +160,6 @@ jobs:
       - image: docker:git
     steps:
       - checkout
-      # - restore_cache:
-      #     keys:
-      #       - build-cache-{{ arch }}-<< pipeline.id >>
       - attach_workspace:
           at: ~/project
       - setup_remote_docker
@@ -228,10 +218,6 @@ jobs:
             --query 'Reservations[*].Instances[*].PublicIpAddress' \
             --filters Name=tag:Name,Values=capstone \
             --output text >> ~/project/.circleci/ansible/inventory.txt
-      # - save_cache:
-      #     paths:
-      #       - ~/project/.circleci/ansible/inventory.txt
-      #     key: << pipeline.id >>-deploy-infra
       - persist_to_workspace:
           root: ~/
           paths:
@@ -353,8 +339,6 @@ jobs:
           name: Install dependencies
           command: |
             apk add curl
-            pip3 install --upgrade pip \
-              && pip3 install awscli
       - run:
           name: Get URL
           command: |
@@ -381,8 +365,6 @@ jobs:
           name: Install dependencies
           command: |
             apk add curl
-            pip3 install --upgrade pip \
-              && pip3 install awscli
       - run:
           name: Get URL
           command: |
@@ -415,8 +397,6 @@ jobs:
           name: Install dependencies
           command: |
             apk add --update ansible
-            pip3 install --upgrade pip \
-              && pip3 install awscli
       - run:
           name: Configure server
           command: |
@@ -459,7 +439,6 @@ workflows:
               only: /^app.*/
               ignore: /^infra.*/
       - discover-infrastructure:
-          #requires: [build-image]
           filters:
             tags:
               only: /^app.*/
